@@ -1,0 +1,83 @@
+---
+title: "Feature Engineering"
+author: "Sara Hassani"
+date: "2025-02-16"
+output: html_document
+---
+
+```{r setup}
+library(dplyr)
+library(tidytext)
+library(lubridate)
+library(stringr)
+```
+
+```{r}
+data = read.csv("pre_processed.csv")
+```
+
+The pre-processing already includes standardization and handling of missing values.
+
+```{r}
+# sentiment score from article titles
+bing_lexicon = get_sentiments("bing")
+
+sentiment = data %>%
+  unnest_tokens(word, webTitle) %>%
+  inner_join(bing_lexicon, by = "word") %>%
+  group_by(X) %>%
+  summarize(sentiment_score = sum(sentiment == "positive") - sum(sentiment == "negative")) %>%
+  mutate(sentiment_label = case_when(
+    sentiment_score > 0 ~ "Positive",
+    sentiment_score < 0 ~ "Negative",
+    TRUE ~ "Neutral"
+  ))
+
+data = left_join(data, sentiment, by = "X")
+
+# Article word count
+data$word_count <- str_count(data$body, "\\S+")  
+
+# date variables, essential components
+data$Date = as.Date(data$Date)
+data$month = month(data$Date, label = T)
+data$day = wday(data$Date, label = T)
+
+# volatility using ATR for 7 day period
+## removing weeks with 0 stock information
+keep = c()
+for(i in 1:nrow(data)){
+  if(data$Open[i] == 0 & data$High[i] == 0 & data$Low[i] == 0 & data$Close[i] == 0){
+    keep = c(keep,i)
+  }
+}
+data = data[-keep,]
+
+## isolate stock information
+stock = data[,c(2:5,9)]
+stock = unique(stock)
+stock$volatility = NA
+
+## calculate ATR in 7 day averages (standardized)
+for(i in 8:nrow(stock)){
+  temp = stock[(i-6):i,]
+  previous = stock$Close[(i-7):(i-1)]
+  
+  c1 = temp$High - temp$Low
+  c2 = abs(temp$High - previous)
+  c3 = abs(temp$Low - previous)
+  
+  comp = data.frame(c1, c2, c3)
+  c = lapply(1:7, function(x) max(comp[x, ]))
+  c = unlist(c)
+  
+  stock$volatility[i] = mean(c)
+}
+
+data = left_join(data, stock)
+
+write.csv(data, "engineered.csv")
+```
+
+
+
