@@ -10,6 +10,7 @@ library(dplyr)
 library(tidytext)
 library(lubridate)
 library(stringr)
+library(vader)
 ```
 
 ```{r}
@@ -35,6 +36,15 @@ sentiment = data %>%
 
 data = left_join(data, sentiment, by = "X")
 
+# Improvement of sentiment score
+vader = vader::vader_df(data$webTitle)
+data$vader_score = vader$compound
+data$vader_label = case_when(
+  vader$compound > 0.05 ~ "Positive",
+  vader$compound < -0.05 ~ "Negative",
+  TRUE ~ "Neutral"
+)
+
 # Article word count
 data$word_count <- str_count(data$body, "\\S+")  
 
@@ -42,6 +52,18 @@ data$word_count <- str_count(data$body, "\\S+")
 data$Date = as.Date(data$Date)
 data$month = month(data$Date, label = T)
 data$day = wday(data$Date, label = T)
+
+# Proof example of time differences | Volume
+ggplot(data, aes(x = factor(month), y = Volume)) +
+  geom_boxplot(fill = "steelblue", alpha = 0.7, outlier.color = "red") +
+  labs(title = "Monthly Distribution of Volume",
+       x = "Month",
+       y = "Volume") +
+  theme_minimal() +
+  theme(
+    text = element_text(size = 14),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
 
 # volatility using ATR for 7 day period
 ## removing weeks with 0 stock information
@@ -76,8 +98,18 @@ for(i in 8:nrow(stock)){
 
 data = left_join(data, stock)
 
+# Proof example of Time difference | Volatility
+ggplot(data, aes(x = factor(month), y = volatility)) +
+  geom_boxplot(fill = "lightgreen", alpha = 0.7, outlier.color = "red") +
+  labs(title = "Monthly Distribution of Volume",
+       x = "Month",
+       y = "Volume") +
+  theme_minimal() +
+  theme(
+    text = element_text(size = 14),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
+
 write.csv(data, "engineered.csv")
 ```
-
-
 
