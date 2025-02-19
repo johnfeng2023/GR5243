@@ -10,7 +10,7 @@ sp500_df = sp500.history(start="2024-01-01", end="2024-12-31")
 sp500_df.index = sp500_df.index.tz_localize(None).date
 sp500_df["Date"] = sp500_df.index
 
-guardian_api_key = "e719c707-c299-4069-ab8c-86161b20a26a"
+guardian_api_key = "api_key_here" # Insert your own guardian api key here
 base_url = "https://content.guardianapis.com/search"
 
 
