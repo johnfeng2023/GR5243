@@ -37,7 +37,8 @@ For **data.py**, you need to get your own api key from [The Guardian](https://bo
 - [news_df.csv](news_df.csv) - raw news article data file
 - [merged_df.csv](merged_df.csv).csv -final raw data file
 - [EDA.ipynb](EDA.ipynb) - EDA
-- [EDA_Preprocessing.ipynb](EDA_Preprocessing.ipynb) - Data Preprocessing
+- [Preprocessing.ipynb](Preprocessing.ipynb) - Data Preprocessing
+- [categorical_feature_transform.ipynb](categorical_feature_transform.ipynb) - Categorical Feature Transformation
 - [feature engineering.Rmd](<feature engineering.Rmd>) - Feature Engineering
 - [final_dataset.csv](final_dataset.csv) - Final dataset
 
