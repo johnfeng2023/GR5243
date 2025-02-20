@@ -11,16 +11,21 @@ library(tidytext)
 library(lubridate)
 library(stringr)
 library(vader)
+library(ggplot2)
 ```
 
 ```{r}
-data = read.csv("pre_processed.csv")
+data = read.csv("processed_data.csv")
 ```
 
 The pre-processing already includes standardization and handling of missing values.
 
 ```{r}
-# sentiment score from article titles
+if (!"X" %in% colnames(data)) {
+  data$X <- seq_len(nrow(data))  # Creates a unique row index
+}
+
+# Sentiment analysis using Bing lexicon
 bing_lexicon = get_sentiments("bing")
 
 sentiment = data %>%
@@ -36,22 +41,28 @@ sentiment = data %>%
 
 data = left_join(data, sentiment, by = "X")
 
-# Improvement of sentiment score
-vader = vader::vader_df(data$webTitle)
-data$vader_score = vader$compound
+# Improvement of sentiment score using VADER
+vader_scores = vader::vader_df(data$webTitle)
+data$vader_score = vader_scores$compound
 data$vader_label = case_when(
-  vader$compound > 0.05 ~ "Positive",
-  vader$compound < -0.05 ~ "Negative",
+  vader_scores$compound > 0.05 ~ "Positive",
+  vader_scores$compound < -0.05 ~ "Negative",
   TRUE ~ "Neutral"
 )
 
 # Article word count
-data$word_count <- str_count(data$body, "\\S+")  
+data$word_count <- str_count(data$body, "\\S+")
 
-# date variables, essential components
-data$Date = as.Date(data$Date)
-data$month = month(data$Date, label = T)
-data$day = wday(data$Date, label = T)
+# Convert Date column and extract time components
+data$Date = as.Date(data$Date, format = "%Y-%m-%d")
+data$month = month(data$Date, label = TRUE)
+data$day = wday(data$Date, label = TRUE)
+
+# Remove rows where stock information is all zero
+zero_rows <- which(data$Open == 0 & data$High == 0 & data$Low == 0 & data$Close == 0)
+if (length(zero_rows) > 0) {
+  data <- data[-zero_rows, ]
+}
 
 # Proof example of time differences | Volume
 ggplot(data, aes(x = factor(month), y = Volume)) +
@@ -65,45 +76,34 @@ ggplot(data, aes(x = factor(month), y = Volume)) +
     plot.title = element_text(hjust = 0.5, face = "bold")
   )
 
-# volatility using ATR for 7 day period
-## removing weeks with 0 stock information
-keep = c()
-for(i in 1:nrow(data)){
-  if(data$Open[i] == 0 & data$High[i] == 0 & data$Low[i] == 0 & data$Close[i] == 0){
-    keep = c(keep,i)
-  }
-}
-data = data[-keep,]
-
-## isolate stock information
-stock = data[,c(2:5,9)]
-stock = unique(stock)
+# Isolate stock information for volatility calculation
+stock = unique(data[, c("High", "Low", "Open", "Close", "X")])
 stock$volatility = NA
 
-## calculate ATR in 7 day averages (standardized)
-for(i in 8:nrow(stock)){
-  temp = stock[(i-6):i,]
-  previous = stock$Close[(i-7):(i-1)]
-  
+# Calculate ATR for a 7-day rolling window
+for (i in 8:nrow(stock)) {
+  temp = stock[(i - 6):i, ]
+  previous = stock$Close[(i - 7):(i - 1)]
+
   c1 = temp$High - temp$Low
   c2 = abs(temp$High - previous)
   c3 = abs(temp$Low - previous)
-  
+
   comp = data.frame(c1, c2, c3)
-  c = lapply(1:7, function(x) max(comp[x, ]))
-  c = unlist(c)
-  
-  stock$volatility[i] = mean(c)
+  c = apply(comp, 1, max)
+
+  stock$volatility[i] = mean(c, na.rm = TRUE)
 }
 
-data = left_join(data, stock)
+# Join volatility data back to the main dataset
+data = left_join(data, stock, by = "X")
 
-# Proof example of Time difference | Volatility
+# Proof example of time difference | Volatility
 ggplot(data, aes(x = factor(month), y = volatility)) +
   geom_boxplot(fill = "lightgreen", alpha = 0.7, outlier.color = "red") +
-  labs(title = "Monthly Distribution of Volume",
+  labs(title = "Monthly Distribution of Volatility",
        x = "Month",
-       y = "Volume") +
+       y = "Volatility") +
   theme_minimal() +
   theme(
     text = element_text(size = 14),
