@@ -17,7 +17,6 @@ Python:
 - seaborn
 - scikit-learn
 - scipy
-- 
 
 R: 
   - dply
