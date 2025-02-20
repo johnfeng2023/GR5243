@@ -14,7 +14,10 @@ Python:
 - numpy
 - pandas
 - matplotlib
+- seaborn
 - scikit-learn
+- scipy
+- 
 
 R: 
   - dply
@@ -22,6 +25,7 @@ R:
   - lubridate
   - stringr
   - vader
+  - ggplot2
 
 For data.py, you need to get your own api key from guardian api and replace in
 - `guardian_api_key = "api_key_here" # Insert your own guardian api key here`
