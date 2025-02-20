@@ -39,7 +39,7 @@ For data.py, you need to get your own api key from guardian api and replace in
 
 ---
 
-## 👥 Team Contributions
+## Team Contributions
 
 | Task                        | Contributor       |
 |-----------------------------|------------------|
