@@ -27,19 +27,19 @@ R:
   - ggplot2
 
 For **data.py**, you need to get your own api key from [The Guardian](https://bonobo.capi.gutools.co.uk/register/developer) and replace in
-- `guardian_api_key = "api_key_here" # Insert your own guardian api key here`
+- `guardian_api_key = "api_key_here" `
 
 ---
 
 ## Files
-- data.py - Data acquision, data cleaning and merging datasets
-- sp500_df.csv - raw s&p500 data file
-- news_df.csv - raw news article data file
-- merged_df.csv -final raw data file
-- EDA.ipynb - EDA
-- EDA_Preprocessing.ipynb - Data Preprocessing
-- feature engineering.Rmd - Feature Engineering
-- final_dataset.csv - Final dataset
+- [data.py](data.py) - Data acquision, data cleaning and merging datasets
+- [sp500_df.csv](sp500_df.csv) - raw s&p500 data file
+- [news_df.csv](news_df.csv) - raw news article data file
+- [merged_df.csv](merged_df.csv).csv -final raw data file
+- [EDA.ipynb](EDA.ipynb) - EDA
+- [EDA_Preprocessing.ipynb](EDA_Preprocessing.ipynb) - Data Preprocessing
+- [feature engineering.Rmd](<feature engineering.Rmd>) - Feature Engineering
+- [final_dataset.csv](final_dataset.csv) - Final dataset
 
 ---
 
