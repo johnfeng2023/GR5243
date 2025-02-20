@@ -1,4 +1,4 @@
-# GR5243 Project 1: Data Acquisition & Feature Engineering
+# GR5243 Project 1:
 
 ## Project Overview
 This project explores the relationship between **S&P 500 market trends in 2024** and **news articles** using **Yahoo Finance (`yfinance`) & The Guardian API**.  
